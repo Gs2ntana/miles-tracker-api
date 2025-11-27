@@ -20,7 +20,6 @@ public class DashboardService {
     // Requisito: "Histórico de acúmulo e uso"
     @Transactional(readOnly = true)
     public List<HistoricoResponse> getHistorico(Usuario usuario) {
-        // Usamos o método corrigido que você já tem
         return aquisicaoRepository.findByCartaoUsuarioId(usuario.getId())
                 .stream()
                 .map(a -> new HistoricoResponse(
