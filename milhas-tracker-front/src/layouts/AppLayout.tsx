@@ -1,15 +1,22 @@
-import { LayoutDashboard, Wallet, CreditCard as CardIcon, BarChart3, Settings, Bell, Search, User } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  CreditCard as CardIcon, 
+  User, 
+  LogOut,
+  Search, 
+  Bell 
+} from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const AppLayout = ({ children }: any) => {
   const location = useLocation();
+  const { signOut } = useAuth();
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: CardIcon, label: 'Meus Cartões', path: '/cartoes' },
-    { icon: Wallet, label: 'Transações', path: '/transacoes' },
-    { icon: BarChart3, label: 'Investimentos', path: '/investimentos' },
-    { icon: Settings, label: 'Configurações', path: '/config' },
+    { icon: User, label: 'Meu Perfil', path: '/perfil' },
   ];
 
   return (
@@ -40,12 +47,24 @@ const AppLayout = ({ children }: any) => {
             )
           })}
         </nav>
+
+        <div className="pt-6 border-t border-slate-800 mt-auto">
+            <button 
+              onClick={signOut}
+              className="flex items-center gap-4 p-3 rounded-xl text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all w-full"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="font-medium">Sair</span>
+            </button>
+        </div>
       </aside>
 
       <main className="flex-1 flex flex-col">
         
         <header className="h-20 border-b border-slate-800 flex items-center justify-between px-8 bg-midnight-900/50 backdrop-blur-md sticky top-0 z-20">
-          <h2 className="text-2xl font-semibold text-white">Overview</h2>
+          <h2 className="text-2xl font-semibold text-white">
+            {menuItems.find(i => i.path === location.pathname)?.label || 'Overview'}
+          </h2>
           
           <div className="flex items-center gap-6">
 
@@ -63,11 +82,14 @@ const AppLayout = ({ children }: any) => {
               <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-midnight-900"></span>
             </button>
             
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-electric-400 to-purple-500 p-[2px] cursor-pointer">
-              <div className="w-full h-full rounded-full bg-midnight-900 flex items-center justify-center overflow-hidden">
-                 <User className="w-6 h-6 text-slate-400" />
+            <Link to="/perfil">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-electric-400 to-purple-500 p-[2px] cursor-pointer hover:scale-105 transition-transform">
+                <div className="w-full h-full rounded-full bg-midnight-900 flex items-center justify-center overflow-hidden">
+                    <User className="w-6 h-6 text-slate-400" />
+                </div>
               </div>
-            </div>
+            </Link>
+
           </div>
         </header>
 

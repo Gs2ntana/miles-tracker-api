@@ -1,8 +1,12 @@
 {
   "devDependencies": {
+    "@types/react": "^18.2.42",
+    "@types/react-dom": "^18.2.17",
     "@types/react-router-dom": "^5.3.3"
   },
   "dependencies": {
-    "react-router-dom": "^7.12.0"
+    "react-hook-form": "^7.71.1",
+    "react-router-dom": "^7.12.0",
+    "recharts": "^3.6.0"
   }
 }

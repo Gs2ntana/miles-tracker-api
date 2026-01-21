@@ -17,4 +17,7 @@ public class Programa {
 
     @Column(nullable = false, unique = true)
     private String nome;
+
+    @Column(name = "dias_carencia")
+    private Integer diasCarencia;
 }

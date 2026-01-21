@@ -1,93 +1,217 @@
+import { useQuery } from '@tanstack/react-query';
+import { 
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Pie, PieChart 
+} from 'recharts';
+import { 
+  Wallet, TrendingUp, CreditCard, Bell, Search, Download, Plus 
+} from 'lucide-react';
+
 import AppLayout from '../layouts/AppLayout';
-import CreditCard from '../components/ui/CreditCard';
-import { ArrowUpRight, ArrowDownLeft, DollarSign } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { dashboardService } from '../services/dashboardService';
 
 const Dashboard = () => {
+  const { user } = useAuth();
+
+  // --- QUERIES ---
+  const { data: historico, isLoading: loadHist } = useQuery({
+    queryKey: ['historico'],
+    queryFn: dashboardService.getHistorico,
+    initialData: [] 
+  });
+
+  const { data: mediaData } = useQuery({
+    queryKey: ['mediaDias'],
+    queryFn: dashboardService.getMediaDias
+  });
+
+  const { data: pontosCartao } = useQuery({
+    queryKey: ['pontosCartao'],
+    queryFn: dashboardService.getPontosPorCartao,
+    initialData: []
+  });
+
+  const COLORS = ['#6366F1', '#10B981', '#F59E0B', '#EF4444'];
+
   return (
     <AppLayout>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* HEADER ESPECÍFICO DO DASHBOARD */}
+      <header className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-1">
+            Olá, {user?.nome || 'Usuário'} 👋
+          </h1>
+          <p className="text-slate-400">Aqui está o resumo das suas milhas hoje.</p>
+        </div>
+        
+        <div className="flex gap-4">
+          <button className="p-3 bg-midnight-800 rounded-xl text-slate-400 hover:text-white border border-slate-700 transition-colors">
+            <Search size={20} />
+          </button>
+          <button className="p-3 bg-midnight-800 rounded-xl text-slate-400 hover:text-white border border-slate-700 relative transition-colors">
+            <Bell size={20} />
+            <span className="absolute top-2 right-2 w-2 h-2 bg-electric-500 rounded-full"></span>
+          </button>
+        </div>
+      </header>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-8">
         
         <div className="lg:col-span-2 space-y-8">
           
-          <div>
+          {/* KPI CARDS */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Total Acumulado */}
+            <div className="bg-gradient-to-br from-electric-600 to-electric-800 rounded-3xl p-6 text-white shadow-lg shadow-electric-900/20 relative overflow-hidden group">
+              <div className="absolute -right-10 -top-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all"></div>
+              <div className="flex justify-between items-start mb-8 relative z-10">
+                <div className="p-3 bg-white/10 rounded-xl backdrop-blur-sm">
+                  <Wallet size={24} className="text-white" />
+                </div>
+                <span className="flex items-center gap-1 text-xs font-medium bg-white/20 px-2 py-1 rounded-lg">
+                  <TrendingUp size={12} /> +12%
+                </span>
+              </div>
+              <div className="relative z-10">
+                <p className="text-electric-100 text-sm font-medium mb-1">Total Acumulado</p>
+                <h3 className="text-3xl font-bold">
+                  {historico.reduce((acc, item) => acc + item.pontos, 0).toLocaleString()} pts
+                </h3>
+              </div>
+            </div>
+
+            {/* Média de Dias */}
+            <div className="bg-midnight-800 rounded-3xl p-6 border border-slate-800 hover:border-slate-700 transition-colors group">
+               <div className="flex justify-between items-start mb-8">
+                <div className="p-3 bg-orange-500/10 rounded-xl group-hover:bg-orange-500/20 transition-colors">
+                  <TrendingUp size={24} className="text-orange-500" />
+                </div>
+              </div>
+              <div>
+                <p className="text-slate-400 text-sm font-medium mb-1">Média Dias p/ Crédito</p>
+                <h3 className="text-3xl font-bold text-white">
+                  {mediaData?.mediaDiasParaCredito?.toFixed(1) || 0} dias
+                </h3>
+              </div>
+            </div>
+
+            {/* Atalho Nova Aquisição */}
+            <button className="bg-midnight-800 rounded-3xl p-6 border border-slate-800 border-dashed hover:border-electric-500 hover:bg-electric-500/5 transition-all group flex flex-col items-center justify-center text-center cursor-pointer h-full">
+               <div className="p-4 bg-electric-500/10 rounded-full mb-3 group-hover:scale-110 transition-transform">
+                 <Plus size={24} className="text-electric-500" />
+               </div>
+               <p className="text-white font-medium">Nova Aquisição</p>
+            </button>
+          </div>
+
+          {/* GRÁFICO PRINCIPAL */}
+          <div className="bg-midnight-800 rounded-3xl p-6 border border-slate-800 h-[400px]">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-semibold text-white">Meus Cartões</h3>
-              <button className="text-sm text-electric-400 hover:text-white font-medium transition-colors">Ver todos</button>
+              <h3 className="text-xl font-semibold text-white">Evolução de Milhas</h3>
+              <button 
+                onClick={() => dashboardService.downloadHistoricoPdf()}
+                className="flex items-center gap-2 text-sm text-electric-400 hover:text-white transition-colors"
+              >
+                <Download size={16} /> Relatório PDF
+              </button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <CreditCard variant="blue" saldo={12500} digitos="9876" nome="Black Infinite" />
-              <CreditCard variant="dark" saldo={3450} digitos="5432" nome="Platinum" />
-            </div>
+            {loadHist ? (
+               <div className="h-full flex items-center justify-center text-slate-500">Carregando gráfico...</div>
+            ) : (
+              <ResponsiveContainer width="100%" height="85%">
+                <AreaChart data={historico}>
+                  <defs>
+                    <linearGradient id="colorPontos" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6366F1" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#6366F1" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" vertical={false} />
+                  <XAxis dataKey="data" stroke="#475569" tick={{fill: '#475569'}} axisLine={false} tickLine={false} />
+                  <YAxis stroke="#475569" tick={{fill: '#475569'}} axisLine={false} tickLine={false} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#0F172A', borderColor: '#1E293B', borderRadius: '12px' }}
+                    itemStyle={{ color: '#fff' }}
+                  />
+                  <Area type="monotone" dataKey="pontos" stroke="#6366F1" strokeWidth={3} fillOpacity={1} fill="url(#colorPontos)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </div>
-
-          <div className="bg-midnight-800 rounded-3xl p-6 border border-slate-800">
-            <h3 className="text-xl font-semibold text-white mb-6">Atividade Semanal</h3>
-            <div className="h-64 flex items-end justify-between gap-2 px-2">
-               {[40, 70, 35, 90, 25, 60, 80].map((h, i) => (
-                 <div key={i} className="w-full bg-midnight-900 rounded-t-xl relative group">
-                    <div 
-                      style={{ height: `${h}%` }} 
-                      className="absolute bottom-0 w-full bg-electric-500 rounded-t-xl transition-all hover:bg-electric-400"
-                    ></div>
-                    <div 
-                      style={{ height: `${h/2}%` }} 
-                      className="absolute bottom-0 w-full bg-cyan-400 rounded-t-xl translate-x-1.5 opacity-60"
-                    ></div>
-                 </div>
-               ))}
-            </div>
-            <div className="flex justify-between text-slate-500 text-sm mt-4 px-2">
-              <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sab</span><span>Dom</span>
-            </div>
-          </div>
-
         </div>
 
         <div className="space-y-8">
           
+          {/* PIZZA CHART */}
           <div className="bg-midnight-800 rounded-3xl p-6 border border-slate-800">
-             <h3 className="text-xl font-semibold text-white mb-6">Últimas Transações</h3>
-             
-             <div className="space-y-6">
-                {[
-                  { desc: "Amazon Store", date: "28 Jan 2026", val: "-850 pts", type: "out", icon: "shopping" },
-                  { desc: "Bônus Transferência", date: "25 Jan 2026", val: "+2,500 pts", type: "in", icon: "bonus" },
-                  { desc: "Uber Trip", date: "21 Jan 2026", val: "-350 pts", type: "out", icon: "transport" },
-                ].map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between group">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${item.type === 'in' ? 'bg-green-500/10 text-green-400' : 'bg-orange-500/10 text-orange-400'}`}>
-                         {item.type === 'in' ? <ArrowDownLeft className="w-6 h-6"/> : <ArrowUpRight className="w-6 h-6"/>}
-                      </div>
-                      <div>
-                        <p className="font-medium text-white group-hover:text-electric-400 transition-colors">{item.desc}</p>
-                        <p className="text-xs text-slate-500">{item.date}</p>
-                      </div>
+             <h3 className="text-xl font-semibold text-white mb-6">Distribuição</h3>
+             <div className="h-[200px] w-full relative">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pontosCartao as any[]}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="totalPontos"
+                      nameKey="nomeCartao"
+                    >
+                      {pontosCartao.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: '#0F172A', borderColor: '#334155', borderRadius: '8px', color: '#fff' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+                   <span className="text-xs text-slate-500">Cartões</span>
+                   <p className="text-xl font-bold text-white">{pontosCartao.length}</p>
+                </div>
+             </div>
+
+             <div className="mt-4 space-y-3">
+                {pontosCartao.map((item, index) => (
+                  <div key={index} className="flex justify-between items-center text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                      <span className="text-slate-300">{item.nomeCartao}</span>
                     </div>
-                    <span className={`font-bold ${item.type === 'in' ? 'text-green-400' : 'text-orange-400'}`}>
-                      {item.val}
-                    </span>
+                    <span className="font-bold text-white">{item.totalPontos}</span>
                   </div>
                 ))}
              </div>
           </div>
 
-          {/* Estatística de Gastos (Pizza) */}
+          {/* LISTA RECENTES */}
           <div className="bg-midnight-800 rounded-3xl p-6 border border-slate-800">
-             <h3 className="text-xl font-semibold text-white mb-4">Distribuição</h3>
-             <div className="h-48 w-full bg-midnight-900 rounded-full border-8 border-midnight-800 relative flex items-center justify-center">
-                {/* Simulando gráfico de Pizza com CSS Conic Gradient */}
-                <div className="absolute inset-0 rounded-full" style={{ background: 'conic-gradient(#6366f1 0% 35%, #22d3ee 35% 65%, #f472b6 65% 100%)', opacity: 0.8 }}></div>
-                <div className="absolute inset-4 bg-midnight-800 rounded-full flex flex-col items-center justify-center">
-                   <span className="text-3xl font-bold text-white">30%</span>
-                   <span className="text-xs text-slate-400">Viagens</span>
+            <h3 className="text-xl font-semibold text-white mb-6">Recentes</h3>
+            <div className="space-y-6">
+              {historico.slice(0, 5).map((item, index) => (
+                <div key={index} className="flex items-center justify-between group cursor-pointer">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors
+                      ${item.status === 'APROVADO' ? 'bg-green-500/10 text-green-500' : 'bg-slate-700/30 text-slate-400'}
+                    `}>
+                      <CreditCard size={20} />
+                    </div>
+                    <div>
+                      <p className="font-medium text-white group-hover:text-electric-400 transition-colors">{item.descricao}</p>
+                      <p className="text-xs text-slate-500">{item.data}</p>
+                    </div>
+                  </div>
+                  <span className="font-bold text-white">+{item.pontos}</span>
                 </div>
-             </div>
+              ))}
+              {historico.length === 0 && (
+                <p className="text-slate-500 text-center py-4">Nenhuma atividade recente.</p>
+              )}
+            </div>
           </div>
 
         </div>
-
       </div>
     </AppLayout>
   );

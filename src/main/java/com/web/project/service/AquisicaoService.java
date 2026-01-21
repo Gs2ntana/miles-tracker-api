@@ -35,8 +35,12 @@ public class AquisicaoService {
 
         String pathArquivo = fileStorageService.saveFile(arquivo);
 
+        Programa programa = cartao.getProgramaPadrao();
+        int diasDoPrograma = (programa != null && programa.getDiasCarencia() != null)
+                ? programa.getDiasCarencia()
+                : 30;
+        LocalDate dataPrevista = request.dataCompra().plusDays(diasDoPrograma);
         int pontos = calcularPontos(request.valorCompra(), cartao.getFatorConversao());
-        LocalDate dataPrevista = request.dataCompra().plusDays(request.diasParaCredito());
 
         Aquisicao aquisicao = new Aquisicao();
         aquisicao.setValorCompra(request.valorCompra());

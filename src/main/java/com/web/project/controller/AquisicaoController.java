@@ -27,7 +27,6 @@ public class AquisicaoController {
             @RequestParam("valorCompra") BigDecimal valorCompra,
             @RequestParam("descricao") String descricao,
             @RequestParam("dataCompra") LocalDate dataCompra,
-            @RequestParam("diasParaCredito") Integer diasParaCredito,
             @RequestParam("cartaoId") Long cartaoId,
             @RequestPart("comprovante") MultipartFile arquivo,
             @AuthenticationPrincipal Usuario usuarioLogado
@@ -36,7 +35,7 @@ public class AquisicaoController {
             return ResponseEntity.badRequest().build();
         }
 
-        AquisicaoRequestDTO request = new AquisicaoRequestDTO(valorCompra, descricao, dataCompra, diasParaCredito, cartaoId);
+        AquisicaoRequestDTO request = new AquisicaoRequestDTO(valorCompra, descricao, dataCompra, cartaoId);
 
         AquisicaoResponse aquisicaoSalva = aquisicaoService.registrarAquisicao(request, arquivo, usuarioLogado);
         return ResponseEntity.status(HttpStatus.CREATED).body(aquisicaoSalva);

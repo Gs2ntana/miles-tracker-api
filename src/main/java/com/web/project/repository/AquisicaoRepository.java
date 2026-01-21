@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface AquisicaoRepository extends JpaRepository<Aquisicao, Long> {
-    List<Aquisicao> findByCartaoUsuarioId(Long usuarioId);
+    List<Aquisicao> findByCartaoUsuarioIdOrderByDataCompraAsc(Long usuarioId);
 
     @Query("SELECT new com.web.project.requests.PontosPorCartaoResponse(a.cartao.nome, a.cartao.digitos, SUM(a.pontosEsperados)) " +
             "FROM Aquisicao a " +

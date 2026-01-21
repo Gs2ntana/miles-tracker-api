@@ -17,8 +17,5 @@ public record AquisicaoRequestDTO(
         LocalDate dataCompra,
 
         @NotNull
-        Integer diasParaCredito,
-
-        @NotNull
         Long cartaoId
 ) {}
