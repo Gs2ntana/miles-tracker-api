@@ -1,17 +1,20 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Pie, PieChart 
 } from 'recharts';
 import { 
-  Wallet, TrendingUp, CreditCard, Bell, Search, Download, Plus 
+  Wallet, TrendingUp, CreditCard, Plus, Download
 } from 'lucide-react';
 
 import AppLayout from '../layouts/AppLayout';
 import { useAuth } from '../context/AuthContext';
 import { dashboardService } from '../services/dashboardService';
+import { NovaAquisicaoModal } from '../components/ui/NovaAquisicaoModal';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // --- QUERIES ---
   const { data: historico, isLoading: loadHist } = useQuery({
@@ -35,33 +38,20 @@ const Dashboard = () => {
 
   return (
     <AppLayout>
-      {/* HEADER ESPECÍFICO DO DASHBOARD */}
-      <header className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-1">
-            Olá, {user?.nome || 'Usuário'} 👋
-          </h1>
-          <p className="text-slate-400">Aqui está o resumo das suas milhas hoje.</p>
-        </div>
-        
-        <div className="flex gap-4">
-          <button className="p-3 bg-midnight-800 rounded-xl text-slate-400 hover:text-white border border-slate-700 transition-colors">
-            <Search size={20} />
-          </button>
-          <button className="p-3 bg-midnight-800 rounded-xl text-slate-400 hover:text-white border border-slate-700 relative transition-colors">
-            <Bell size={20} />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-electric-500 rounded-full"></span>
-          </button>
-        </div>
-      </header>
+      
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-white mb-1">
+          Olá, {user?.nome || 'Usuário'} 👋
+        </h1>
+        <p className="text-slate-400">Aqui está o resumo das suas milhas hoje.</p>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-8">
         
         <div className="lg:col-span-2 space-y-8">
-          
-          {/* KPI CARDS */}
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Total Acumulado */}
+            
             <div className="bg-gradient-to-br from-electric-600 to-electric-800 rounded-3xl p-6 text-white shadow-lg shadow-electric-900/20 relative overflow-hidden group">
               <div className="absolute -right-10 -top-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all"></div>
               <div className="flex justify-between items-start mb-8 relative z-10">
@@ -75,12 +65,11 @@ const Dashboard = () => {
               <div className="relative z-10">
                 <p className="text-electric-100 text-sm font-medium mb-1">Total Acumulado</p>
                 <h3 className="text-3xl font-bold">
-                  {historico.reduce((acc, item) => acc + item.pontos, 0).toLocaleString()} pts
+                  {historico.reduce((acc: any, item: any) => acc + item.pontos, 0).toLocaleString()} pts
                 </h3>
               </div>
             </div>
 
-            {/* Média de Dias */}
             <div className="bg-midnight-800 rounded-3xl p-6 border border-slate-800 hover:border-slate-700 transition-colors group">
                <div className="flex justify-between items-start mb-8">
                 <div className="p-3 bg-orange-500/10 rounded-xl group-hover:bg-orange-500/20 transition-colors">
@@ -95,8 +84,10 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Atalho Nova Aquisição */}
-            <button className="bg-midnight-800 rounded-3xl p-6 border border-slate-800 border-dashed hover:border-electric-500 hover:bg-electric-500/5 transition-all group flex flex-col items-center justify-center text-center cursor-pointer h-full">
+            <button 
+                onClick={() => setIsModalOpen(true)}
+                className="bg-midnight-800 rounded-3xl p-6 border border-slate-800 border-dashed hover:border-electric-500 hover:bg-electric-500/5 transition-all group flex flex-col items-center justify-center text-center cursor-pointer h-full"
+            >
                <div className="p-4 bg-electric-500/10 rounded-full mb-3 group-hover:scale-110 transition-transform">
                  <Plus size={24} className="text-electric-500" />
                </div>
@@ -104,7 +95,6 @@ const Dashboard = () => {
             </button>
           </div>
 
-          {/* GRÁFICO PRINCIPAL */}
           <div className="bg-midnight-800 rounded-3xl p-6 border border-slate-800 h-[400px]">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-semibold text-white">Evolução de Milhas</h3>
@@ -143,7 +133,6 @@ const Dashboard = () => {
 
         <div className="space-y-8">
           
-          {/* PIZZA CHART */}
           <div className="bg-midnight-800 rounded-3xl p-6 border border-slate-800">
              <h3 className="text-xl font-semibold text-white mb-6">Distribuição</h3>
              <div className="h-[200px] w-full relative">
@@ -159,7 +148,7 @@ const Dashboard = () => {
                       dataKey="totalPontos"
                       nameKey="nomeCartao"
                     >
-                      {pontosCartao.map((_, index) => (
+                      {pontosCartao.map((_: any, index: number) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -173,7 +162,7 @@ const Dashboard = () => {
              </div>
 
              <div className="mt-4 space-y-3">
-                {pontosCartao.map((item, index) => (
+                {pontosCartao.map((item: any, index: number) => (
                   <div key={index} className="flex justify-between items-center text-sm">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
@@ -185,11 +174,10 @@ const Dashboard = () => {
              </div>
           </div>
 
-          {/* LISTA RECENTES */}
           <div className="bg-midnight-800 rounded-3xl p-6 border border-slate-800">
             <h3 className="text-xl font-semibold text-white mb-6">Recentes</h3>
             <div className="space-y-6">
-              {historico.slice(0, 5).map((item, index) => (
+              {historico.slice(0, 5).map((item: any, index: number) => (
                 <div key={index} className="flex items-center justify-between group cursor-pointer">
                   <div className="flex items-center gap-4">
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors
@@ -213,6 +201,12 @@ const Dashboard = () => {
 
         </div>
       </div>
+
+      <NovaAquisicaoModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
+      
     </AppLayout>
   );
 };

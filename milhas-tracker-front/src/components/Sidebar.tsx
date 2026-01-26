@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, CreditCard, User, LogOut } from 'lucide-react';
+import { LayoutDashboard, CreditCard, User, LogOut, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Sidebar = () => {
@@ -9,11 +9,12 @@ const Sidebar = () => {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: CreditCard, label: 'Meus Cartões', path: '/cartoes' },
+    { icon: Bell, label: 'Notificações', path: '/notificacoes' },
     { icon: User, label: 'Meu Perfil', path: '/perfil' },
   ];
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-midnight-900 border-r border-slate-800 flex flex-col">
+    <aside className="fixed left-0 top-0 h-screen w-64 bg-midnight-900 border-r border-slate-800 flex flex-col z-40">
       <div className="p-8">
         <h1 className="text-2xl font-bold text-white tracking-tighter">
           Milhas<span className="text-electric-500">App</span>.

@@ -8,7 +8,13 @@ export const cartaoService = {
   },
 
   cadastrar: async (novoCartao: CartaoRequest) => {
-    const { data } = await api.post<CartaoResponse>('/cartoes', novoCartao);
+    const payload = {
+        ...novoCartao,
+        bandeiraId: Number(novoCartao.bandeiraId),
+        programaPadraoId: Number(novoCartao.programaPadraoId)
+    };
+
+    const { data } = await api.post<CartaoResponse>('/cartoes', payload);
     return data;
   }
 };

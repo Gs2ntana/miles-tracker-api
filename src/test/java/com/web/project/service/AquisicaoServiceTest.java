@@ -60,7 +60,7 @@ class AquisicaoServiceTest {
                 new BigDecimal("100.00"),
                 "Teste Unitário",
                 LocalDate.now(),
-                30,
+                ,
                 10L // ID Cartao
         );
 
@@ -100,7 +100,7 @@ class AquisicaoServiceTest {
         cartao.setUsuario(donoDoCartao);
 
         AquisicaoRequestDTO request = new AquisicaoRequestDTO(
-                new BigDecimal("50.00"), "Fraude", LocalDate.now(), 30, 10L
+                new BigDecimal("50.00"), "Fraude", LocalDate.now(), _, 10L
         );
 
         when(cartaoRepository.findById(10L)).thenReturn(Optional.of(cartao));

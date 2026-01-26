@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
-import { Plus, CreditCard, Loader2 } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 
 import AppLayout from '../layouts/AppLayout';
 import { cartaoService } from '../services/cartaoService';
 import type { CartaoRequest } from '../types';
+import CreditCard from '../components/ui/CreditCard';
+import { useAuth } from '../context/AuthContext';
 
 const Cartoes = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const queryClient = useQueryClient();
-
+  const { user } = useAuth();
   const { data: cartoes, isLoading } = useQuery({
     queryKey: ['cartoes'],
     queryFn: cartaoService.listar,
@@ -27,7 +29,7 @@ const Cartoes = () => {
       reset();
     },
     onError: (error) => {
-      alert('Erro ao cadastrar cartão. Verifique o console.');
+      alert('Erro ao cadastrar cartão. Verifique se o backend está rodando.');
       console.error(error);
     }
   });
@@ -38,7 +40,6 @@ const Cartoes = () => {
 
   return (
     <AppLayout>
-      {/* HEADER ESPECÍFICO DA PÁGINA CARTÕES */}
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-white mb-1">Meus Cartões</h1>
@@ -52,45 +53,28 @@ const Cartoes = () => {
         </button>
       </div>
 
-      {/* GRID DE CARTÕES */}
       {isLoading ? (
-        <div className="text-white">Carregando cartões...</div>
+        <div className="text-white flex items-center gap-2">
+            <Loader2 className="animate-spin" /> Carregando cartões...
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8">
           
-          {cartoes.map((cartao) => (
-            <div key={cartao.id} className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 border border-slate-700 relative overflow-hidden group hover:border-electric-500/50 transition-all shadow-xl">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-electric-500/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
-              
-              <div className="flex justify-between items-start mb-8">
-                <CreditCard className="text-electric-400" size={32} />
-                <span className="bg-slate-700/50 text-slate-300 text-xs px-2 py-1 rounded font-mono border border-slate-600">
-                  {cartao.nomeBandeira}
-                </span>
-              </div>
-              
-              <div className="space-y-1 mb-6">
-                <h3 className="text-xl font-semibold text-white tracking-wide">{cartao.nome}</h3>
-                <p className="text-slate-500 font-mono">•••• •••• •••• {cartao.digitos}</p>
-              </div>
-
-              <div className="flex items-center justify-between pt-4 border-t border-slate-700/50">
-                 <div>
-                    <p className="text-xs text-slate-500">Programa</p>
-                    <p className="text-sm font-medium text-electric-300">{cartao.nomePrograma}</p>
-                 </div>
-                 <div className="text-right">
-                    <p className="text-xs text-slate-500">Vencimento</p>
-                    <p className="text-sm text-white">Dia 10</p>
-                 </div>
-              </div>
-            </div>
+          {cartoes.map((cartao, index) => (
+            <CreditCard 
+                key={cartao.id}
+                nome={cartao.nome}
+                digitos={cartao.digitos}
+                bandeira={cartao.nomeBandeira}
+                programa={cartao.nomePrograma}
+                titular={user?.nome || "USUÁRIO"}
+                variant={index % 2 === 0 ? 'blue' : 'black'}
+            />
           ))}
 
-          {/* Botão Card "Adicionar" */}
           <button 
              onClick={() => setIsModalOpen(true)}
-             className="border-2 border-dashed border-slate-800 rounded-2xl p-6 flex flex-col items-center justify-center text-slate-500 hover:text-electric-400 hover:border-electric-500/50 hover:bg-electric-500/5 transition-all min-h-[220px]"
+             className="border-2 border-dashed border-slate-800 rounded-3xl p-6 flex flex-col items-center justify-center text-slate-500 hover:text-electric-400 hover:border-electric-500/50 hover:bg-electric-500/5 transition-all min-h-[224px]"
           >
             <Plus size={40} className="mb-2 opacity-50" />
             <span className="font-medium">Adicionar Cartão</span>
@@ -98,30 +82,28 @@ const Cartoes = () => {
         </div>
       )}
 
-      {/* MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-midnight-900 border border-slate-700 rounded-3xl p-8 w-full max-w-md shadow-2xl relative">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-midnight-900 border border-slate-700 rounded-3xl p-8 w-full max-w-md shadow-2xl relative animate-in zoom-in-95 duration-200">
             <h2 className="text-2xl font-bold text-white mb-6">Novo Cartão</h2>
             
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
-                <label className="block text-slate-400 text-sm mb-1">Nome do Cartão</label>
-                <input {...register("nome")} placeholder="Ex: Nubank Ultravioleta" className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-electric-500 transition-colors" required />
+                <label className="block text-slate-400 text-sm mb-1">Apelido do Cartão</label>
+                <input {...register("nome", { required: true })} placeholder="Ex: Nubank Ultravioleta" className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-electric-500 transition-colors" />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
                    <label className="block text-slate-400 text-sm mb-1">Últimos 4 Dígitos</label>
-                   <input {...register("digitos")} maxLength={4} placeholder="1234" className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-electric-500 transition-colors" required />
+                   <input {...register("digitos", { required: true, maxLength: 4 })} maxLength={4} placeholder="1234" className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-electric-500 transition-colors" />
                 </div>
                 
                 <div>
                    <label className="block text-slate-400 text-sm mb-1">Bandeira</label>
                    <select 
-                     {...register("bandeiraId")} 
+                     {...register("bandeiraId", { required: true })} 
                      className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-electric-500 transition-colors appearance-none"
-                     required
                      defaultValue=""
                    >
                       <option value="" disabled>Selecione...</option>
@@ -136,9 +118,8 @@ const Cartoes = () => {
               <div>
                 <label className="block text-slate-400 text-sm mb-1">Programa de Fidelidade</label>
                 <select 
-                  {...register("programaPadraoId")} 
+                  {...register("programaPadraoId", { required: true })} 
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-electric-500 transition-colors appearance-none"
-                  required
                   defaultValue=""
                 >
                    <option value="" disabled>Selecione...</option>
@@ -150,13 +131,13 @@ const Cartoes = () => {
               </div>
 
               <div className="flex gap-3 mt-6">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 text-slate-300 hover:text-white transition-colors font-medium">Cancelar</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 text-slate-300 hover:text-white transition-colors font-medium border border-transparent hover:border-slate-700 rounded-xl">Cancelar</button>
                 <button 
                   type="submit" 
                   disabled={createCartaoMutation.isPending}
-                  className="flex-1 bg-electric-600 hover:bg-electric-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-electric-900/20 transition-all flex justify-center"
+                  className="flex-1 bg-electric-600 hover:bg-electric-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-electric-900/20 transition-all flex items-center justify-center gap-2"
                 >
-                  {createCartaoMutation.isPending ? <Loader2 className="animate-spin" /> : "Salvar Cartão"}
+                  {createCartaoMutation.isPending ? <Loader2 className="animate-spin w-5 h-5" /> : "Salvar Cartão"}
                 </button>
               </div>
             </form>
