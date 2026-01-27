@@ -5,41 +5,54 @@ import { User, Mail, Lock, ArrowRight, Loader2, Eye, EyeOff, CheckCircle } from 
 import { authService } from '../services/authService';
 import type { RegisterRequest } from '../types';
 
+// Tipagem do formulário:
+// Estendemos o tipo da API (RegisterRequest) para incluir 'confirmarSenha',
+// que existe apenas na interface, mas não é enviado ao backend.
 type RegisterForm = RegisterRequest & {
   confirmarSenha: string;
 };
 
 function Register() {
   const navigate = useNavigate();
+  
+  // Estados para alternar a visibilidade das senhas (input type="text" vs "password")
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
+  // Estado para controlar a transição entre o formulário e a tela de sucesso
   const [isSuccess, setIsSuccess] = useState(false);
 
   const { 
     register, 
     handleSubmit, 
-    watch,
-    setError,
+    watch, // Necessário para monitorar o valor da senha em tempo real
+    setError, // Usado para definir erros globais (root) que não são específicos de um campo
     formState: { errors, isSubmitting } 
   } = useForm<RegisterForm>();
 
+  // Observa o campo 'senha' para usar na validação do campo 'confirmarSenha'
   const senhaValue = watch("senha");
 
   async function handleRegister(data: RegisterForm) {
     try {
+      // DESESTRUTURAÇÃO INTELIGENTE:
+      // Removemos 'confirmarSenha' do objeto 'data' e agrupamos o resto em 'payload'.
+      // Isso garante que enviamos para a API apenas o que ela espera (nome, email, senha).
       const { confirmarSenha, ...payload } = data;
       
       await authService.register(payload);
       
+      // Ativa a UI de sucesso
       setIsSuccess(true);
       
+      // Redireciona para o login após 2 segundos para o usuário ler a mensagem
       setTimeout(() => {
         navigate('/');
       }, 2000);
 
     } catch (error) {
       console.error(error);
+      // Define um erro genérico no formulário caso a API falhe (ex: email duplicado)
       setError("root", { 
         message: "Erro ao criar conta. Tente um e-mail diferente." 
       });
@@ -50,7 +63,9 @@ function Register() {
     <div className="min-h-screen bg-midnight-900 flex items-center justify-center p-4">
       <div className="bg-midnight-800 p-8 rounded-3xl border border-slate-800 shadow-2xl w-full max-w-md space-y-8 relative overflow-hidden">
         
+        {/* Cabeçalho do Card */}
         <div className="text-center">
+          {/* Ícone muda dinamicamente baseado no sucesso do cadastro */}
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-electric-500/10 text-electric-500 mb-4 border border-electric-500/20">
             {isSuccess ? <CheckCircle size={24} /> : <User size={24} />}
           </div>
@@ -60,19 +75,24 @@ function Register() {
           </p>
         </div>
 
+        {/* Renderização Condicional: Sucesso vs Formulário */}
         {isSuccess ? (
+          // --- ESTADO DE SUCESSO ---
           <div className="text-center py-8 animate-in fade-in zoom-in duration-300">
             <h3 className="text-xl font-semibold text-white mb-2">Conta Criada!</h3>
             <p className="text-slate-400">Redirecionando para o login...</p>
             <Loader2 className="w-8 h-8 text-electric-500 animate-spin mx-auto mt-6" />
           </div>
         ) : (
+          // --- FORMULÁRIO DE CADASTRO ---
           <form onSubmit={handleSubmit(handleRegister)} className="space-y-5 animate-in slide-in-from-bottom-4 duration-500">
             
+            {/* Campo: Nome Completo */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">Nome Completo</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  {/* Ícone com mudança de cor baseada em erro/foco */}
                   <User className={`h-5 w-5 transition-colors ${errors.nome ? 'text-red-500' : 'text-slate-500 group-focus-within:text-electric-400'}`} />
                 </div>
                 <input 
@@ -89,6 +109,7 @@ function Register() {
               {errors.nome && <span className="text-xs text-red-400 ml-1">{errors.nome.message}</span>}
             </div>
 
+            {/* Campo: E-mail */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">E-mail</label>
               <div className="relative group">
@@ -101,7 +122,7 @@ function Register() {
                   {...register("email", { 
                     required: "E-mail é obrigatório",
                     pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, // Regex simples de email
                       message: "Insira um e-mail válido"
                     }
                   })}
@@ -115,6 +136,7 @@ function Register() {
               {errors.email && <span className="text-xs text-red-400 ml-1">{errors.email.message}</span>}
             </div>
 
+            {/* Campo: Senha */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">Senha</label>
               <div className="relative group">
@@ -122,6 +144,7 @@ function Register() {
                   <Lock className={`h-5 w-5 transition-colors ${errors.senha ? 'text-red-500' : 'text-slate-500 group-focus-within:text-electric-400'}`} />
                 </div>
                 <input 
+                  // Toggle de visibilidade
                   type={showPassword ? "text" : "password"} 
                   placeholder="••••••••"
                   {...register("senha", { 
@@ -145,6 +168,7 @@ function Register() {
               {errors.senha && <span className="text-xs text-red-400 ml-1">{errors.senha.message}</span>}
             </div>
 
+            {/* Campo: Confirmar Senha */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">Confirmar Senha</label>
               <div className="relative group">
@@ -156,6 +180,7 @@ function Register() {
                   placeholder="••••••••"
                   {...register("confirmarSenha", { 
                     required: "Confirme sua senha",
+                    // Validação Cruzada: compara o valor deste input com o valor assistido de 'senha'
                     validate: (val) => {
                       if (watch('senha') != val) {
                         return "As senhas não coincidem";
@@ -179,12 +204,14 @@ function Register() {
               {errors.confirmarSenha && <span className="text-xs text-red-400 ml-1">{errors.confirmarSenha.message}</span>}
             </div>
 
+            {/* Exibição de Erros Globais (Root Errors) vindos da API */}
             {errors.root && (
               <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm text-center">
                 {errors.root.message}
               </div>
             )}
 
+            {/* Botão de Cadastro */}
             <button 
               type="submit" 
               disabled={isSubmitting}
@@ -203,6 +230,7 @@ function Register() {
               )}
             </button>
 
+            {/* Rodapé com link para Login */}
             <div className="text-center pt-2">
               <p className="text-slate-400 text-sm">
                 Já tem uma conta?{' '}
