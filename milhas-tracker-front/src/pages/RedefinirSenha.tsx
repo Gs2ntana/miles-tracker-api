@@ -11,26 +11,45 @@ type ResetForm = {
 
 function RedefinirSenha() {
   const navigate = useNavigate();
+  
+  // Hook para ler parâmetros da URL (Query Strings)
+  // Essencial para capturar o token de segurança enviado por e-mail (ex: /redefinir?token=xyz)
   const [searchParams] = useSearchParams();
 
+<<<<<<< HEAD
   const tokenUrl = searchParams.get('token'); 
   
   const [isSuccess, setIsSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+=======
+  // Estados locais para controle de UI
+  const [isSuccess, setIsSuccess] = useState(false); // Alterna entre formulário e mensagem de sucesso
+  const [showPassword, setShowPassword] = useState(false); // Toggle de visibilidade da senha 1
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Toggle de visibilidade da senha 2
+>>>>>>> 167a1eec9ea9dee0a71340e504f1d18ddc4c870b
 
   const { 
     register, 
     handleSubmit, 
+<<<<<<< HEAD
     watch,
     setError,
+=======
+    watch, // Permite observar valores de campos em tempo real
+>>>>>>> 167a1eec9ea9dee0a71340e504f1d18ddc4c870b
     formState: { errors, isSubmitting } 
   } = useForm<ResetForm>();
 
+  // Observa o campo "novaSenha" para validar se a "confirmarSenha" é idêntica
   const novaSenhaValue = watch("novaSenha");
 
+<<<<<<< HEAD
   const token = tokenUrl; 
 
+=======
+  // Efeito para validar a presença do token assim que o componente monta
+>>>>>>> 167a1eec9ea9dee0a71340e504f1d18ddc4c870b
   useEffect(() => {
     if (!token) {
         console.warn("Nenhum token encontrado na URL");
@@ -38,14 +57,23 @@ function RedefinirSenha() {
   }, [token]);
 
   async function handleReset(data: ResetForm) {
+    // Validação de segurança extra antes de enviar
     if (!token) return alert('Token inválido ou expirado.');
 
     try {
+<<<<<<< HEAD
       await api.post('/auth/reset-password', { 
         token: token, 
         novaSenha: data.novaSenha 
       });
+=======
+      console.log('Enviando para API:', { token, novaSenha: data.novaSenha });
       
+      // Simulação de chamada à API
+      await new Promise(resolve => setTimeout(resolve, 1500));
+>>>>>>> 167a1eec9ea9dee0a71340e504f1d18ddc4c870b
+      
+      // Ativa a tela de sucesso
       setIsSuccess(true);
 
       setTimeout(() => navigate('/'), 3000);
@@ -55,6 +83,12 @@ function RedefinirSenha() {
       alert('Erro ao redefinir. O Token pode ter expirado (1 hora de validade).');
     }
   }
+<<<<<<< HEAD
+=======
+
+  // --- RENDERIZAÇÃO CONDICIONAL: TOKEN AUSENTE ---
+  // Se não houver token na URL, mostra erro e impede acesso ao formulário
+>>>>>>> 167a1eec9ea9dee0a71340e504f1d18ddc4c870b
   if (!token) {
     return (
         <div className="min-h-screen bg-midnight-900 flex items-center justify-center p-4">
@@ -71,10 +105,12 @@ function RedefinirSenha() {
     );
   }
 
+  // --- RENDERIZAÇÃO PRINCIPAL ---
   return (
     <div className="min-h-screen bg-midnight-900 flex items-center justify-center p-4">
       <div className="bg-midnight-800 p-8 rounded-3xl border border-slate-800 shadow-2xl w-full max-w-md space-y-8">
         
+        {/* Cabeçalho Dinâmico (Muda ícone e texto baseado no sucesso) */}
         <div className="text-center">
           <div className="w-12 h-12 bg-electric-500 rounded-xl flex items-center justify-center text-white font-bold mx-auto mb-4 shadow-lg shadow-electric-500/20">
             {isSuccess ? <CheckCircle className="w-6 h-6" /> : <Lock className="w-6 h-6" />}
@@ -89,7 +125,9 @@ function RedefinirSenha() {
           </p>
         </div>
 
+        {/* Lógica de Exibição: Sucesso vs Formulário */}
         {isSuccess ? (
+          // --- TELA DE SUCESSO ---
           <div className="animate-in fade-in zoom-in duration-500">
              <Link 
               to="/" 
@@ -100,8 +138,10 @@ function RedefinirSenha() {
             </Link>
           </div>
         ) : (
+          // --- FORMULÁRIO DE REDEFINIÇÃO ---
           <form onSubmit={handleSubmit(handleReset)} className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
 
+            {/* Campo: Nova Senha */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300 ml-1">Nova Senha</label>
               <div className="relative group">
@@ -109,6 +149,7 @@ function RedefinirSenha() {
                   <Lock className={`h-5 w-5 transition-colors ${errors.novaSenha ? 'text-red-500' : 'text-slate-500 group-focus-within:text-electric-400'}`} />
                 </div>
                 <input 
+                  // Alterna tipo do input entre 'text' e 'password' baseado no estado showPassword
                   type={showPassword ? "text" : "password"} 
                   placeholder="Mínimo 6 caracteres"
                   {...register("novaSenha", { 
@@ -121,6 +162,7 @@ function RedefinirSenha() {
                       : 'border-slate-700 focus:border-electric-500 focus:ring-electric-500'
                     }`}
                 />
+                {/* Botão para mostrar/esconder senha. Importante ser type="button" para não submeter o form */}
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
@@ -132,6 +174,7 @@ function RedefinirSenha() {
               {errors.novaSenha && <span className="text-xs text-red-400 ml-1">{errors.novaSenha.message}</span>}
             </div>
 
+            {/* Campo: Confirmar Senha */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300 ml-1">Confirmar Senha</label>
               <div className="relative group">
@@ -143,6 +186,7 @@ function RedefinirSenha() {
                   placeholder="Repita a senha"
                   {...register("confirmarSenha", { 
                     required: "Confirmação é obrigatória",
+                    // Validação customizada: Compara este campo com o valor atual de 'novaSenha'
                     validate: (val) => {
                         if (!val) return "Confirme sua senha";
                         if (val !== novaSenhaValue) return "As senhas não coincidem";
@@ -165,6 +209,7 @@ function RedefinirSenha() {
               {errors.confirmarSenha && <span className="text-xs text-red-400 ml-1">{errors.confirmarSenha.message}</span>}
             </div>
 
+            {/* Botão de Envio */}
             <button 
               type="submit" 
               disabled={isSubmitting}
