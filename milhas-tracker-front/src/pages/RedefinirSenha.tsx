@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Lock, Eye, EyeOff, Loader2, CheckCircle, ArrowRight, AlertTriangle } from 'lucide-react';
+import api from '../services/api';
 
 type ResetForm = {
   novaSenha: string;
@@ -11,8 +12,9 @@ type ResetForm = {
 function RedefinirSenha() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
 
+  const tokenUrl = searchParams.get('token'); 
+  
   const [isSuccess, setIsSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -21,42 +23,46 @@ function RedefinirSenha() {
     register, 
     handleSubmit, 
     watch,
+    setError,
     formState: { errors, isSubmitting } 
   } = useForm<ResetForm>();
 
   const novaSenhaValue = watch("novaSenha");
 
+  const token = tokenUrl; 
+
   useEffect(() => {
     if (!token) {
         console.warn("Nenhum token encontrado na URL");
     }
-  }, [token, navigate]);
+  }, [token]);
 
   async function handleReset(data: ResetForm) {
     if (!token) return alert('Token inválido ou expirado.');
 
     try {
-      console.log('Enviando para API:', { token, novaSenha: data.novaSenha });
-      
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await api.post('/auth/reset-password', { 
+        token: token, 
+        novaSenha: data.novaSenha 
+      });
       
       setIsSuccess(true);
-      
-      // Opcional: Redirecionar automaticamente após 3 segundos
-      // setTimeout(() => navigate('/'), 3000);
+
+      setTimeout(() => navigate('/'), 3000);
       
     } catch (error) {
-      alert('Erro ao redefinir senha.');
+      console.error(error);
+      alert('Erro ao redefinir. O Token pode ter expirado (1 hora de validade).');
     }
   }
-
   if (!token) {
     return (
         <div className="min-h-screen bg-midnight-900 flex items-center justify-center p-4">
             <div className="bg-midnight-800 p-8 rounded-3xl border border-red-900/50 max-w-md w-full text-center">
                 <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
                 <h2 className="text-xl font-bold text-white mb-2">Link Inválido</h2>
-                <p className="text-slate-400 mb-6">Não encontramos o token de segurança. Tente solicitar uma nova recuperação.</p>
+                <p className="text-slate-400 mb-6">Não encontramos o token de segurança na URL. <br/>Tente solicitar uma nova recuperação.</p>
+                
                 <Link to="/recuperar-senha" className="text-electric-400 font-semibold hover:underline">
                     Solicitar novamente
                 </Link>

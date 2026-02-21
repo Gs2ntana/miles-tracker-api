@@ -14,40 +14,40 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-midnight-900 border-r border-slate-800 flex flex-col z-40">
-      <div className="p-8">
-        <h1 className="text-2xl font-bold text-white tracking-tighter">
-          Milhas<span className="text-electric-500">App</span>.
-        </h1>
+    <aside className="w-64 border-r border-slate-800 p-6 hidden md:flex flex-col fixed h-full z-30 bg-midnight-900">
+      <div className="mb-10 flex items-center gap-2">
+        <div className="w-8 h-8 bg-electric-500 rounded-lg flex items-center justify-center text-white font-bold">M</div>
+        <h1 className="text-2xl font-bold text-white">Milhas<span className="text-electric-500">.</span></h1>
       </div>
-      <nav className="flex-1 px-4 space-y-2">
+
+      <nav className="flex-1 space-y-2">
         {menuItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const active = location.pathname === item.path;
           return (
-            <Link
-              key={item.path}
+            <Link 
+              key={item.label} 
               to={item.path}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium
-                ${isActive 
-                  ? 'bg-electric-600 text-white shadow-lg shadow-electric-900/20' 
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'}
-              `}
+              className={`flex items-center gap-4 p-3 rounded-xl transition-all ${
+                active 
+                  ? 'text-electric-400 bg-midnight-800 border-l-4 border-electric-500 shadow-lg' 
+                  : 'text-slate-400 hover:text-white hover:bg-midnight-800/50'
+              }`}
             >
-              <item.icon size={20} />
-              {item.label}
+              <item.icon className="w-5 h-5" />
+              <span className="font-medium">{item.label}</span>
             </Link>
-          );
+          )
         })}
       </nav>
 
-      <div className="p-4 border-t border-slate-800">
-        <button 
-          onClick={signOut}
-          className="flex items-center gap-3 px-4 py-3 w-full text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-colors font-medium"
-        >
-          <LogOut size={20} />
-          Sair
-        </button>
+      <div className="pt-6 border-t border-slate-800 mt-auto">
+          <button 
+            onClick={signOut}
+            className="flex items-center gap-4 p-3 rounded-xl text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all w-full"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="font-medium">Sair</span>
+          </button>
       </div>
     </aside>
   );

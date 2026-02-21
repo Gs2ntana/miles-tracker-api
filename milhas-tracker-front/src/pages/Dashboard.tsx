@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Pie, PieChart 
 } from 'recharts';
 import { 
-  Wallet, TrendingUp, CreditCard, Plus, Download
+  Wallet, TrendingUp, CreditCard, Plus, Download, ArrowRight
 } from 'lucide-react';
 
 import AppLayout from '../layouts/AppLayout';
@@ -16,7 +17,6 @@ const Dashboard = () => {
   const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // --- QUERIES ---
   const { data: historico, isLoading: loadHist } = useQuery({
     queryKey: ['historico'],
     queryFn: dashboardService.getHistorico,
@@ -38,7 +38,6 @@ const Dashboard = () => {
 
   return (
     <AppLayout>
-      
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-1">
           Olá, {user?.nome || 'Usuário'} 👋
@@ -47,11 +46,8 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-8">
-        
         <div className="lg:col-span-2 space-y-8">
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
             <div className="bg-gradient-to-br from-electric-600 to-electric-800 rounded-3xl p-6 text-white shadow-lg shadow-electric-900/20 relative overflow-hidden group">
               <div className="absolute -right-10 -top-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all"></div>
               <div className="flex justify-between items-start mb-8 relative z-10">
@@ -65,7 +61,7 @@ const Dashboard = () => {
               <div className="relative z-10">
                 <p className="text-electric-100 text-sm font-medium mb-1">Total Acumulado</p>
                 <h3 className="text-3xl font-bold">
-                  {historico.reduce((acc: any, item: any) => acc + item.pontos, 0).toLocaleString()} pts
+                  {historico.reduce((acc: number, item: any) => acc + item.pontos, 0).toLocaleString()} pts
                 </h3>
               </div>
             </div>
@@ -98,12 +94,21 @@ const Dashboard = () => {
           <div className="bg-midnight-800 rounded-3xl p-6 border border-slate-800 h-[400px]">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-semibold text-white">Evolução de Milhas</h3>
-              <button 
-                onClick={() => dashboardService.downloadHistoricoPdf()}
-                className="flex items-center gap-2 text-sm text-electric-400 hover:text-white transition-colors"
-              >
-                <Download size={16} /> Relatório PDF
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => dashboardService.downloadHistoricoCsv()}
+                  className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors border border-slate-700 hover:bg-slate-800 px-3 py-1.5 rounded-lg"
+                >
+                  <Download size={16} /> CSV
+                </button>
+                
+                <button 
+                  onClick={() => dashboardService.downloadHistoricoPdf()}
+                  className="flex items-center gap-2 text-sm text-electric-400 hover:text-white transition-colors border border-electric-500/30 hover:bg-electric-500/10 px-3 py-1.5 rounded-lg"
+                >
+                  <Download size={16} /> PDF
+                </button>
+              </div>
             </div>
             
             {loadHist ? (
@@ -132,14 +137,13 @@ const Dashboard = () => {
         </div>
 
         <div className="space-y-8">
-          
           <div className="bg-midnight-800 rounded-3xl p-6 border border-slate-800">
              <h3 className="text-xl font-semibold text-white mb-6">Distribuição</h3>
              <div className="h-[200px] w-full relative">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={pontosCartao as any[]}
+                      data={pontosCartao}
                       cx="50%"
                       cy="50%"
                       innerRadius={60}
@@ -174,7 +178,7 @@ const Dashboard = () => {
              </div>
           </div>
 
-          <div className="bg-midnight-800 rounded-3xl p-6 border border-slate-800">
+          <div className="bg-midnight-800 rounded-3xl p-6 border border-slate-800 flex flex-col">
             <h3 className="text-xl font-semibold text-white mb-6">Recentes</h3>
             <div className="space-y-6">
               {historico.slice(0, 5).map((item: any, index: number) => (
@@ -197,11 +201,18 @@ const Dashboard = () => {
                 <p className="text-slate-500 text-center py-4">Nenhuma atividade recente.</p>
               )}
             </div>
-          </div>
 
+            <div className="pt-6 mt-4 border-t border-slate-800">
+                <Link 
+                  to="/historico" 
+                  className="flex items-center justify-center gap-2 text-sm font-medium text-electric-400 hover:text-white transition-colors w-full p-2 rounded-xl hover:bg-electric-500/10"
+                >
+                  Ver Extrato Completo <ArrowRight size={16} />
+                </Link>
+            </div>
+          </div>
         </div>
       </div>
-
       <NovaAquisicaoModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 

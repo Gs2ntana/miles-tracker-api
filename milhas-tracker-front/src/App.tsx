@@ -9,6 +9,7 @@ import RecuperarSenha from './pages/RecuperarSenha';
 import RedefinirSenha from './pages/RedefinirSenha';
 import Notificacoes from './pages/Notificacoes';
 import Register from './pages/Register';
+import Historico from './pages/Historico';
 
 function App() {
   return (
@@ -25,8 +26,8 @@ function App() {
              <Route path="/" element={<Navigate to="/dashboard" replace />} />
              <Route path="/perfil" element={<Perfil />} />
              <Route path="/notificacoes" element={<Notificacoes />} />
+             <Route path="/historico" element={<Historico />} />
           </Route>
-
         </Routes>
       </BrowserRouter>
     </AuthProvider>

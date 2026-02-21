@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, Loader2, CheckCircle, KeyRound } from 'lucide-react';
+import api from '../services/api';
 
 type RecoverPasswordRequest = {
   email: string;
@@ -13,15 +14,22 @@ function RecuperarSenha() {
   const { 
     register, 
     handleSubmit, 
+    setError,
     formState: { errors, isSubmitting } 
   } = useForm<RecoverPasswordRequest>();
 
   async function handleRecover(data: RecoverPasswordRequest) {
-    console.log('Enviando email de recuperação para:', data.email);
-    
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setIsEmailSent(true);
+    try {
+      await api.post('/auth/forgot-password', { email: data.email });
+      
+      setIsEmailSent(true);
+    } catch (error) {
+      console.error(error);
+      setError('email', { 
+        type: 'manual', 
+        message: 'Erro ao solicitar. Verifique o e-mail ou a conexão.' 
+      });
+    }
   }
 
   return (
@@ -33,11 +41,11 @@ function RecuperarSenha() {
             {isEmailSent ? <CheckCircle className="w-6 h-6" /> : <KeyRound className="w-6 h-6" />}
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">
-            {isEmailSent ? 'Verifique seu e-mail' : 'Recuperar Senha'}
+            {isEmailSent ? 'Verifique seu terminal/e-mail' : 'Recuperar Senha'}
           </h2>
           <p className="text-slate-400 text-sm">
             {isEmailSent 
-              ? 'Enviamos as instruções de recuperação para o endereço informado.' 
+              ? 'O token de recuperação foi gerado (verifique o console do Java).' 
               : 'Digite seu e-mail e enviaremos um link para você redefinir sua senha.'}
           </p>
         </div>
@@ -46,15 +54,22 @@ function RecuperarSenha() {
           <div className="space-y-6 animate-in fade-in duration-500">
             <div className="bg-electric-500/10 border border-electric-500/20 rounded-xl p-4 text-center">
               <p className="text-electric-200 text-sm">
-                Não recebeu? Verifique sua caixa de spam ou tente novamente em alguns minutos.
+                Copie o token gerado e acesse a tela de redefinição.
               </p>
             </div>
             
             <Link 
-              to="/" 
+              to="/redefinir-senha" 
               className="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2"
             >
-              <ArrowLeft className="w-5 h-5" />
+               Ir para Redefinição (Simular Clique no Link)
+               <ArrowLeft className="w-5 h-5 rotate-180" />
+            </Link>
+
+            <Link 
+              to="/" 
+              className="block text-center w-full mt-4 text-slate-400 hover:text-white"
+            >
               Voltar para o Login
             </Link>
           </div>
@@ -95,10 +110,10 @@ function RecuperarSenha() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="animate-spin w-5 h-5" />
-                  Enviando...
+                  Solicitando...
                 </>
               ) : (
-                'Enviar Link de Recuperação'
+                'Solicitar Token'
               )}
             </button>
 

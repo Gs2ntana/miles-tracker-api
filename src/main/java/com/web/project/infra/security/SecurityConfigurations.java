@@ -31,6 +31,8 @@ public class SecurityConfigurations {
                         // Libera os endpoints de autenticação para todos
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/forgot-password").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/reset-password").permitAll()
                         // Bloqueia tudo
                         .anyRequest().authenticated()
                 )
